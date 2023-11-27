@@ -1,5 +1,3 @@
-Flask==2.0.2
-keras==2.7.0
-numpy==1.22.0
-opencv_python==4.5.5.62
-Pillow==9.0.0
+version https://git-lfs.github.com/spec/v1
+oid sha256:cf24d48bfab00032ddd4a675ec860e7a8de0db37e558343ba137c0e05753c139
+size 101
