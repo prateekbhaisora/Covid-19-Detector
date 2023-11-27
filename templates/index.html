@@ -1,0 +1,210 @@
+<html>
+
+<head>
+	<link rel="stylesheet" href="templates/style.css">
+	<title>COVID-19 TESTING</title>
+	<style>
+		.heading {
+			margin-top: 1rem;
+			color: white;
+			text-transform: uppercase;
+			font-family: verdana;
+			text-shadow: 1px 1px 1px #919191;
+			text-align: center;
+		}
+
+		.box {
+			display: flex;
+			justify-content: center;
+		}
+
+		.box .inner {
+			width: 300px;
+			height: 150px;
+			line-height: 150px;
+			font-size: 3rem;
+			font-family: sans-serif;
+			font-weight: bold;
+			white-space: nowrap;
+			overflow: hidden;
+		}
+
+		.box .inner:first-child {
+			background-color: #00bfff;
+			color: darkred;
+			transform-origin: right;
+			transform: perspective(100px) rotateY(-15deg);
+		}
+
+		.box .inner:last-child {
+			background-color: #87cefa;
+			color: antiquewhite;
+			transform-origin: left;
+			transform: perspective(100px) rotateY(15deg);
+		}
+
+		.box .inner span {
+			position: absolute;
+			animation: marquee 5s linear infinite;
+		}
+
+		.box .inner:first-child span {
+			animation-delay: 2.5s;
+			left: -100%;
+		}
+
+		@keyframes marquee {
+			from {
+				left: 100%;
+			}
+
+			to {
+				left: -100%;
+			}
+		}
+
+		body {
+			background-image: linear-gradient(to bottom, #191618, #311925, #4c182c, #68132d, #820c26, #860c21, #890d1b, #8b1014, #7c1015, #6d1015, #5e1015, #4f1014);
+		}
+
+		.grid-container {
+			display: grid;
+			grid-template-columns: 2fr 2fr;
+			grid-gap: 8rem;
+		}
+
+		.grid-item {
+			padding: 7rem 0rem 0rem 15rem;
+		}
+
+		label {
+			padding: 18px;
+			font-size: 1rem;
+			font-family: verdana;
+			font-weight: bold;
+			background: #C0C0C0;
+			margin-right: 10rem;
+			color: black;
+			border-radius: 50px;
+			cursor: pointer;
+			box-shadow: 0px 0px 8px 3px white;
+		}
+
+		input[type="file"] {
+			display: none;
+		}
+
+		.predict {
+			padding: 18px;
+			font-size: 1rem;
+			font-family: verdana;
+			font-weight: bold;
+			border-radius: 50px;
+			cursor: pointer;
+			color: white;
+			background: #00bfff;
+			border: none;
+			box-shadow: 0px 0px 8px 3px #87cefa;
+		}
+
+		.text {
+			margin-top: 3rem;
+			color: white;
+			text-transform: uppercase;
+			font-size: 1.5rem;
+			font-family: verdana;
+			text-shadow: 1px 1px 1px #919191;
+		}
+
+		.result {
+			color: #87cefa;
+		}
+
+		.prob {
+			color: white;
+		}
+
+		.grid-item1 {
+			margin: 1rem 0 0 6rem;
+			width: 400;
+			height: 300;
+			border-radius: 20px;
+			box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
+		}
+
+		.image {
+			border-radius: 20px;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="box">
+		<div class="inner">
+			<span>COVID-19</span>
+		</div>
+		<div class="inner">
+			<span>COVID-19 </span>
+		</div>
+	</div>
+	<h1 class="heading">COVID-19 TESTING USING X-RAY IMAGES</h1>
+
+	<div class="grid-container">
+		<div class="grid-item">
+			<label> Select Image
+				<input id="image-selector" type="file" size="80">
+			</label>
+			<button class="predict" id="predict-button">Predict</button>
+			<p class="text">PREDICTION: <span id="result">...</span></p>
+			<p class="text">PROBABILITY: <span id="probability">...</span></p>
+		</div>
+		<div class="grid-item1">
+			<img class="image" id="selected-image" width="400" src="{{ url_for('static', filename='covid.jpg') }}" />
+		</div>
+	</div>
+</body>
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+<script>
+	let base64Image;
+	$("#image-selector").change(function () {
+		let reader = new FileReader();
+		reader.onload = function (e) {
+			let dataURL = reader.result;
+			$('#selected-image').attr("src", dataURL);
+			base64Image = dataURL.replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
+			console.log(base64Image);
+		}
+		reader.readAsDataURL($("#image-selector")[0].files[0]);
+		$("#result").text("");
+		$("#probability").text("");
+
+	});
+
+	$("#predict-button").click(function () {
+		let message = {
+			image: base64Image
+		}
+		console.log(message);
+		$.post("http://127.0.0.1:5000/predict", JSON.stringify(message), function (response) {
+			$("#result").text(response.prediction.result);
+			$("#probability").text(response.prediction.accuracy.toFixed(2) + "%");
+			console.log(response);
+			if (response.prediction.result == "Covid19 Negative") {
+				$("#result").text(response.prediction.result).css({ "color": "#32CD32" });
+				$("#probability").text(response.prediction.accuracy.toFixed(2) + "%").css({ "color": "#32CD32" });
+			}
+			if (response.prediction.result == "Covid19 Positive") {
+				$("#result").text(response.prediction.result).css({ "color": "#ff5349" });
+				$("#probability").text(response.prediction.accuracy.toFixed(2) + "%").css({ "color": "#ff5349" });
+
+			}
+
+		});
+	});
+
+
+</script>
+
+</html>
